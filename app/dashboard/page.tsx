@@ -1,4 +1,5 @@
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { monitors, monitorLogs } from "@/lib/db/schema";
@@ -6,7 +7,7 @@ import { eq, desc } from "drizzle-orm";
 import DashboardClient from "./dashboard-client";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
 
   if (!session?.user) {
     redirect("/login");
@@ -14,7 +15,7 @@ export default async function DashboardPage() {
 
   // Ambil semua monitor milik user
   const userMonitors = await db.query.monitors.findMany({
-    where: eq(monitors.userId, session.user.id!),
+    where: eq(monitors.userId, (session.user as any).id),
     orderBy: [desc(monitors.createdAt)],
   });
 

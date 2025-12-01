@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { monitors } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -8,13 +9,13 @@ import { generateRandomString } from "@/lib/utils";
 // GET - Ambil semua monitor user
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userMonitors = await db.query.monitors.findMany({
-      where: eq(monitors.userId, session.user.id),
+      where: eq(monitors.userId, (session.user as any).id),
     });
 
     return NextResponse.json(userMonitors);
@@ -27,8 +28,8 @@ export async function GET(request: NextRequest) {
 // POST - Buat monitor baru
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     const heartbeatToken = type === "heartbeat" ? generateRandomString(32) : null;
 
     const newMonitor = await db.insert(monitors).values({
-      userId: session.user.id,
+      userId: (session.user as any).id,
       name,
       type,
       url: url || null,

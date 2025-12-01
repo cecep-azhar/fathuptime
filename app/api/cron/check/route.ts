@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const monitorsToCheck = activeMonitors.filter((monitor) => {
       if (!monitor.lastCheck) return true; // Belum pernah dicek
       const timeSinceLastCheck = (now - monitor.lastCheck.getTime()) / 1000;
-      return timeSinceLastCheck >= monitor.interval;
+      return timeSinceLastCheck >= (monitor.interval || 60);
     });
 
     console.log(`[CRON] Checking ${monitorsToCheck.length} monitors`);

@@ -7,10 +7,10 @@ import { eq } from "drizzle-orm";
 // GET /api/push/[token]?status=up&msg=OK&ping=123
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const token = params.token;
+    const { token } = await params;
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status") || "up";
     const message = searchParams.get("msg") || searchParams.get("message") || "OK";

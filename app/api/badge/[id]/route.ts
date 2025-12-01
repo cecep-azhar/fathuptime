@@ -7,11 +7,12 @@ import { eq } from "drizzle-orm";
 // GET /api/badge/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const monitor = await db.query.monitors.findFirst({
-      where: eq(monitors.id, params.id),
+      where: eq(monitors.id, id),
     });
 
     if (!monitor) {

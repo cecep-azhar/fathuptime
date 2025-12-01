@@ -4,9 +4,10 @@ import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import StatusPageClient from "./status-page-client";
 
-export default async function StatusPagePublic({ params }: { params: { slug: string } }) {
+export default async function StatusPagePublic({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const statusPage = await db.query.statusPages.findFirst({
-    where: eq(statusPages.slug, params.slug),
+    where: eq(statusPages.slug, slug),
   });
 
   if (!statusPage || !statusPage.published) {

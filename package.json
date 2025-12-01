@@ -12,8 +12,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@auth/core": "^0.37.2",
-    "@auth/drizzle-adapter": "^1.7.1",
     "@libsql/client": "^0.14.0",
     "@paralleldrive/cuid2": "^2.3.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -38,7 +36,7 @@
     "lucide-react": "^0.454.0",
     "net": "^1.0.2",
     "next": "^15.0.3",
-    "next-auth": "5.0.0-beta.25",
+    "next-auth": "^4.24.13",
     "next-themes": "^0.4.6",
     "otplib": "^12.0.1",
     "ping": "^0.4.4",
@@ -57,6 +55,7 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.22",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",

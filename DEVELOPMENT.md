@@ -12,7 +12,20 @@ npm run db:push
 npm run dev
 ```
 
-3. **Access Application**
+3. **Run Cron Job (Required for monitoring)**
+
+Buka terminal baru dan jalankan:
+```bash
+# Windows PowerShell
+npm run cron:dev
+
+# Linux/Mac
+npm run cron:dev:bash
+```
+
+**PENTING:** Di development, cron job **TIDAK** berjalan otomatis. Anda harus menjalankan script di atas untuk monitoring bekerja.
+
+4. **Access Application**
 - Dashboard: http://localhost:3000/dashboard
 - Login: http://localhost:3000/login
 - Register: http://localhost:3000/register

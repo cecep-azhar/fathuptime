@@ -2,12 +2,35 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Activity, Clock, TrendingUp, Link as LinkIcon, Copy } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Activity, 
+  Clock, 
+  TrendingUp, 
+  Link as LinkIcon, 
+  Copy, 
+  Trash2, 
+  Settings,
+  Power
+} from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/status-badge";
 import UptimeChart from "@/components/uptime-chart";
 import { calculateUptime } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface MonitorDetailClientProps {
   monitor: any;
@@ -16,6 +39,10 @@ interface MonitorDetailClientProps {
 
 export default function MonitorDetailClient({ monitor, logs }: MonitorDetailClientProps) {
   const { toast } = useToast();
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+  
   const uptime = calculateUptime(logs);
   const lastLog = logs[0];
   const avgResponseTime =
@@ -31,6 +58,77 @@ export default function MonitorDetailClient({ monitor, logs }: MonitorDetailClie
         title: "URL Disalin",
         description: "Heartbeat URL telah disalin ke clipboard",
       });
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/monitors/${monitor.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Delete error:", data);
+        throw new Error(data.error || "Gagal menghapus monitor");
+      }
+
+      toast({
+        title: "Monitor Dihapus",
+        description: `Monitor "${monitor.name}" berhasil dihapus`,
+      });
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error: any) {
+      console.error("Delete monitor error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Gagal menghapus monitor",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const toggleActive = async () => {
+    setIsToggling(true);
+    try {
+      const response = await fetch(`/api/monitors/${monitor.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          active: !monitor.active,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Toggle error:", data);
+        throw new Error(data.error || "Gagal mengubah status monitor");
+      }
+
+      toast({
+        title: monitor.active ? "Monitor Dinonaktifkan" : "Monitor Diaktifkan",
+        description: `Monitor "${monitor.name}" ${monitor.active ? "dinonaktifkan" : "diaktifkan"}`,
+      });
+
+      router.refresh();
+    } catch (error: any) {
+      console.error("Toggle monitor error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Gagal mengubah status monitor",
+        variant: "destructive",
+      });
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -51,14 +149,51 @@ export default function MonitorDetailClient({ monitor, logs }: MonitorDetailClie
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold mb-2">{monitor.name}</h1>
               <p className="text-muted-foreground">
                 {monitor.type.toUpperCase()} • {monitor.url || monitor.heartbeatToken}
               </p>
             </div>
-            <StatusBadge status={monitor.status} />
+            <div className="flex items-center gap-2">
+              <StatusBadge status={monitor.status} />
+              <Button
+                variant={monitor.active ? "outline" : "default"}
+                size="sm"
+                onClick={toggleActive}
+                disabled={isToggling}
+              >
+                <Power className="h-4 w-4 mr-2" />
+                {monitor.active ? "Nonaktifkan" : "Aktifkan"}
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Hapus
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Monitor?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tindakan ini tidak dapat dibatalkan. Monitor <strong>{monitor.name}</strong> dan semua data log-nya akan dihapus permanen.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </div>
 

@@ -1,12 +1,13 @@
 import * as React from "react"
+import { cn } from "@/lib/utils"
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-    size?: "default" | "sm" | "lg" | "icon";
-  }
->(({ className = "", variant = "default", size = "default", ...props }, ref) => {
+const buttonVariants = (props?: {
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  size?: "default" | "sm" | "lg" | "icon";
+}) => {
+  const variant = props?.variant || "default";
+  const size = props?.size || "default";
+  
   const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
   
   const variants = {
@@ -25,9 +26,19 @@ const Button = React.forwardRef<
     icon: "h-10 w-10",
   };
 
+  return `${baseStyles} ${variants[variant]} ${sizes[size]}`;
+};
+
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+    size?: "default" | "sm" | "lg" | "icon";
+  }
+>(({ className = "", variant = "default", size = "default", ...props }, ref) => {
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={cn(buttonVariants({ variant, size }), className)}
       ref={ref}
       {...props}
     />
@@ -35,4 +46,4 @@ const Button = React.forwardRef<
 });
 Button.displayName = "Button";
 
-export { Button };
+export { Button, buttonVariants };
